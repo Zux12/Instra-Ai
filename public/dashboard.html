@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INSTRA AI Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div>
+      <h1>INSTRA AI</h1>
+      <p id="userInfo">Loading user...</p>
+    </div>
+    <button id="logoutBtn" class="secondary-btn">Logout</button>
+  </header>
+
+  <main class="dashboard">
+
+    <section class="panel">
+      <h2>Equipment Modules</h2>
+      <p>Select equipment based on your subscription package.</p>
+      <div id="equipmentGrid" class="equipment-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Troubleshooting Assistant</h2>
+      <p id="selectedEquipmentText">Select an unlocked equipment module first.</p>
+
+      <textarea id="questionInput" placeholder="Example: My turbine meter is reading low after maintenance. What should I check?"></textarea>
+
+      <button id="askBtn">Ask INSTRA AI</button>
+
+      <div id="answerBox" class="answer-box">
+        Answer will appear here.
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
