@@ -27,11 +27,11 @@ loginForm.addEventListener("submit", async (event) => {
 
     localStorage.setItem("instraUser", JSON.stringify(data.user));
 
-    if (data.user.role === "admin") {
-      window.location.href = "/admin";
-    } else {
-      window.location.href = "/dashboard";
-    }
+if (data.user.role === "admin") {
+  window.location.href = "/admin.html";
+} else {
+  window.location.href = "/dashboard.html";
+}
   } catch (error) {
     loginMessage.textContent = "Login error: " + error.message;
   }
