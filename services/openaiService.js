@@ -4,6 +4,46 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+function buildFallbackAnswer({
+  userQuestion,
+  equipmentType,
+  packageName,
+  approvedKnowledge
+}) {
+  const k = approvedKnowledge[0];
+
+  return `
+1. Problem Summary
+${k.problemSummary || userQuestion}
+
+2. Equipment Involved
+${equipmentType}
+
+3. Most Likely Causes
+${(k.possibleCauses || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+4. Step-by-Step Checks
+${(k.recommendedChecks || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+5. Corrective Actions
+${(k.correctiveActions || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+6. Relevant Standards
+${(k.relevantStandards || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+7. Tacit Knowledge / Field Experience
+${(k.tacitKnowledge || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+8. Confidence Level
+${k.confidenceLevel || "Medium"}
+
+9. When to Escalate
+${(k.escalationGuidance || []).map((x, i) => `${i + 1}. ${x}`).join("\n")}
+
+Note: This answer was generated from approved INSTRA AI knowledge. AI formatting was bypassed because the OpenAI call failed.
+`;
+}
+
 async function generateStandardizedAnswer({
   userQuestion,
   equipmentType,
@@ -11,7 +51,12 @@ async function generateStandardizedAnswer({
   approvedKnowledge
 }) {
   if (!process.env.OPENAI_API_KEY) {
-    return "OPENAI_API_KEY is missing. Please configure it before testing AI responses.";
+    return buildFallbackAnswer({
+      userQuestion,
+      equipmentType,
+      packageName,
+      approvedKnowledge
+    });
   }
 
   const systemPrompt = `
@@ -53,22 +98,33 @@ Approved Knowledge:
 ${JSON.stringify(approvedKnowledge, null, 2)}
 `;
 
-  const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.1,
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt
-      },
-      {
-        role: "user",
-        content: userPrompt
-      }
-    ]
-  });
+  try {
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.1,
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: userPrompt
+        }
+      ]
+    });
 
-  return completion.choices[0].message.content;
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error("OpenAI error:", error.message);
+
+    return buildFallbackAnswer({
+      userQuestion,
+      equipmentType,
+      packageName,
+      approvedKnowledge
+    });
+  }
 }
 
 module.exports = {
